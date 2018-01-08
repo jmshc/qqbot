@@ -151,6 +151,8 @@ def sett_after_open_result(result):
         update_user_score(value, get_score)
         now_score = OpRedisTest.get_user_score(str(value))
         b_contact = myplug.G_DICT_PARA_USER.get(str(value))
+        if not b_contact:
+            continue
         if b_contact[0].ctype == 'buddy':
             myplug.e_send_info_para_one(value, '恭喜你竞猜正确,获得 ' + str(get_score) + '积分' +
                                                '你现在共有积分 ' + str(now_score) + '积分')

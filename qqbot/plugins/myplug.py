@@ -5,12 +5,13 @@
 
 import OpRedisTest
 import GuessGuessLe
+import sys
 import copy
 # list_member = []
 
 # 支持的命令 '瓢虫': 2, '棒棒糖': 2, '月亮': 2, '太阳': 2, 都调用 2函数
 G_DICT_CMD = {'菜单': 0, '竞猜': 1, '瓢虫': 2, '棒棒糖': 2, '月亮': 2, '太阳': 2, '查询': 3, '退出': 4, '签到': 5,
-              '启动': 20, '上分': 21, '暂停': 22}
+              '启动': 20, '上分': 21, '暂停': 22, '更新': 23, '重启': 24}
 
 #  '签到': 4, '上分': 5, '下注 ': 6, '猜猜乐': 7}
 
@@ -24,6 +25,48 @@ G_DICT_PARA_USER = {}
 
 # 群发
 G_DICT_NAME_CONTACT = {}
+
+
+def e_restart_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
+    """
+    重启
+    :param p_bot:
+    :param p_contact:
+    :param p_st_contact:
+    :param p_list_cmd:
+    :return:
+    """
+    sys.exit(201)
+    p_bot.SendTo(p_contact, '系统正在重启')
+
+
+def e_update_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
+    """
+    更新
+    :param p_bot:
+    :param p_contact:
+    :param p_st_contact:
+    :param p_list_cmd:
+    :return:
+    """
+    if len(p_list_cmd) < 2:
+        return
+
+    if p_contact.ctype != 'buddy':
+        return
+
+    if p_contact.name != '聖':
+        return
+
+    if p_list_cmd[1] == '好友':
+        p_bot.Update('buddy')
+        p_bot.SendTo(p_contact, '更新好友列表')
+    else:
+        gl = p_bot.List('group', p_list_cmd[1])
+        if gl:
+            g = gl[0]
+            p_bot.Update(g)
+        p_bot.SendTo(p_contact, '更新群列表')
 
 
 def e_menu_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
@@ -95,6 +138,7 @@ def e_user_bet_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
 
     if not GuessGuessLe.G_THREAD_RUN_FLAG:
         p_bot.SendTo(p_contact, '游戏还没有开始,现在不能竞猜,请稍等')
+        return -1
 
     if -1 == OpRedisTest.user_guess(p_st_contact.name, int_guess_score, int_guess_option):
         p_bot.SendTo(p_contact, '系统正在处理,现在不能竞猜,请稍等')
@@ -136,6 +180,8 @@ def e_start_guess_game_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
     :param p_list_cmd:
     :return:
     """
+    if p_contact.ctype != 'buddy':
+        return
     if p_st_contact.name == '聖':
         if -1 == GuessGuessLe.create_thread_guess():
             p_bot.SendTo(p_contact, ''
@@ -148,6 +194,9 @@ def e_stop_game_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
     """
     暂停游戏
     """
+    if p_contact.ctype != 'buddy':
+        return
+
     if p_st_contact.name == '聖':
         if -1 == GuessGuessLe.stop_thread():
             p_bot.SendTo(p_contact, ''
@@ -185,6 +234,8 @@ def e_add_user_score_cmd(p_bot, p_contact, p_st_contact, p_list_cmd):
     :param p_list_cmd:
     :return:
     """
+    if p_contact.ctype != 'buddy':
+        return
     if p_st_contact.name == '聖':
         try:
             int_user_name = p_list_cmd[1]
@@ -205,7 +256,9 @@ G_DICT_SWITCH = {
     5: e_user_sign_cmd,
     20: e_start_guess_game_cmd,
     21: e_add_user_score_cmd,
-    22: e_stop_game_cmd
+    22: e_stop_game_cmd,
+    23: e_update_cmd,
+    24: e_restart_cmd
     }
 
 # 菜单
